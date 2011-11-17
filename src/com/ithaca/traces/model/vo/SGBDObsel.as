@@ -64,9 +64,9 @@ package com.ithaca.traces.model.vo
 {
 
     /**
-     * Serializable object binding to the corresponding object on the
-     * server side (java).
-     */
+    * Serializable object binding to the corresponding object on the
+    * server side (java).
+    */
     [Bindable]
     public class SGBDObsel
     {

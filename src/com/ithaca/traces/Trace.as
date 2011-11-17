@@ -62,172 +62,172 @@
  */
 package com.ithaca.traces
 {
-	/* For remoting */
-   
-    import flash.events.EventDispatcher;
-    
-    import mx.collections.ArrayCollection;
-    import mx.logging.ILogger;
-    import mx.logging.Log;
-    import mx.rpc.remoting.RemoteObject;
+/* For remoting */
 
+import flash.events.EventDispatcher;
+
+import mx.collections.ArrayCollection;
+import mx.logging.ILogger;
+import mx.logging.Log;
+import mx.rpc.remoting.RemoteObject;
+
+/**
+ * Usage:
+ * since the class is a singleton (common cairngorm idiocy^H^Hm)
+ * we provide a helper static method, thus usage becomes:
+ * - at application start, initialize the trace with the uid and possibly the URI:
+ *   trace = new Trace(uri='http:...', uid=loggedUser.id);
+ * - to log an Obsel:
+ *   import com.ithaca.traces.Trace;
+ *   Trace.trace("PresenceStart", { email: loggedUser.mail, surname: loggedUser.firstname, name: loggedUser.lastName });
+ 
+ *
+ */
+[Bindable]
+public class Trace extends EventDispatcher
+{
     /**
-     * Usage:
-     * since the class is a singleton (common cairngorm idiocy^H^Hm)
-     * we provide a helper static method, thus usage becomes:
-     * - at application start, initialize the trace with the uid and possibly the URI:
-     *   trace = new Trace(uri='http:...', uid=loggedUser.id);
-     * - to log an Obsel:
-     *   import com.ithaca.traces.Trace;
-     *   Trace.trace("PresenceStart", { email: loggedUser.mail, surname: loggedUser.firstname, name: loggedUser.lastName });
-
-     *
+     * Defines the Singleton instance of the Trace
      */
-    [Bindable]
-    public class Trace extends EventDispatcher
+    private static var instance: Trace;
+    
+    /**
+     * Shared RemoteObject
+     */
+    public static var traceRemoteObject: RemoteObject;
+    
+    private static var logger:ILogger = Log.getLogger("com.ithaca.traces.Trace");
+    
+    public var uri: String = "";
+    public var uid: int = 0;
+    
+    public var obsels: ArrayCollection;
+    /* If True, automatically synchronize with the KTBS */
+    public var autosync: Boolean = true;
+    
+    public function twoDigits(n: int): String
     {
-        /**
-         * Defines the Singleton instance of the Trace
-         */
-        private static var instance: Trace;
-
-        /**
-         * Shared RemoteObject
-         */
-        public static var traceRemoteObject: RemoteObject;
-
-        private static var logger:ILogger = Log.getLogger("com.ithaca.traces.Trace");
-
-        public var uri: String = "";
-        public var uid: int = 0;
-
-        public var obsels: ArrayCollection;
-        /* If True, automatically synchronize with the KTBS */
-        public var autosync: Boolean = true;
-
-		public function twoDigits(n: int): String
-		{
-			if (n < 10)
-				return "0" + n.toString();
-			else
-				return n.toString();
-		}
-
-        public function Trace(uid: int = 0, uri: String = ""): void
-        {
-			var d: Date = new Date();
-			// FIXME: debug for the moment (since KTBS is not used):
-			if (uri == "")
-				uri = "trace-" + d.fullYear + twoDigits(d.month + 1) + twoDigits(d.date) + twoDigits(d.hours) + twoDigits(d.minutes) + twoDigits(d.seconds) + "-" + uid;
-            this.uri = uri;
-            this.uid = uid;
-            this.obsels = new ArrayCollection()
-        }
-
-		public static function init_remote(server: String): void
-		{
-			// Initialise RemoteObject
-			traceRemoteObject = new RemoteObject();
-			traceRemoteObject.endpoint=server;
-			traceRemoteObject.destination = "ObselService";
-			traceRemoteObject.makeObjectsBindable=true;
-			traceRemoteObject.showBusyCursor=false;
-		} 
-
-        public function get remote(): RemoteObject
-        {
-            return traceRemoteObject;
-        }
-
-        public function addObsel(obsel: Obsel): Obsel
-        {
-            if (obsel.uid == 0)
-                obsel.uid = this.uid;
-      
-            obsel.trace = this;
-
-            this.obsels.addItem(obsel);
-
-            if (this.autosync)
-            {
-                obsel.toSGBD();
-            }
-            return obsel;
-        }
-        public function delObsel(obsel :Obsel):void
-        {
-        	obsel.trace = this;
-        	if(this.autosync)
-        	{
-	        	obsel.deleteObselSGBD();
-        	}
-        }
-        public function updObsel(obsel:Obsel):void
-        {
-        	obsel.trace = this;
-
-        	if(this.autosync)
-        	{
-	        	obsel.updateObselSGBD();
-        	}
-        }
-
-        /**
-         * Return the set of obsels matching type.
-         */
-        public function filter(type: String): ArrayCollection
-        {
-            var result: ArrayCollection = new ArrayCollection();
-
-            for each (var obs: Obsel in this.obsels)
-            {
-                if (obs.type == type)
-                {
-                    result.addItem(obs);
-                }
-            }
-            return result;
-        }
-
-		override public function toString(): String
-		{
-			return "Trace with " + this.obsels.length + " element(s)";
-		}
-
-        /**
-         * Returns the Singleton instance of the Trace
-         */
-        public static function getInstance(uid: int = 0, uri: String = "") : Trace
-        {
-            if (instance == null)
-            {
-                instance = new Trace(uid, uri);
-            }
-            return instance;
-        }
-
-        /**
-         * Convenience static method to quickly create an Obsel and
-         * add it to the trace (singleton).
-         */
-        public static function trace(type: String, props: Object = null): Obsel
-        {
-            var o: Obsel;
-
-            try
-            {
-                o = new Obsel(type, instance.uid, props);
-                instance.addObsel(o);
-                
-                logger.debug("\n===\n" + o.toRDF() + "\n===\n");
-            }
-			catch (error:Error)
-			{
-				logger.debug("Exception in trace: " + error);
-			}
-            return o;
-        }
-
+        if (n < 10)
+            return "0" + n.toString();
+        else
+            return n.toString();
     }
+    
+    public function Trace(uid: int = 0, uri: String = ""): void
+    {
+        var d: Date = new Date();
+        // FIXME: debug for the moment (since KTBS is not used):
+        if (uri == "")
+            uri = "trace-" + d.fullYear + twoDigits(d.month + 1) + twoDigits(d.date) + twoDigits(d.hours) + twoDigits(d.minutes) + twoDigits(d.seconds) + "-" + uid;
+        this.uri = uri;
+        this.uid = uid;
+        this.obsels = new ArrayCollection()
+    }
+    
+    public static function init_remote(server: String): void
+    {
+        // Initialise RemoteObject
+        traceRemoteObject = new RemoteObject();
+        traceRemoteObject.endpoint=server;
+        traceRemoteObject.destination = "ObselService";
+        traceRemoteObject.makeObjectsBindable=true;
+        traceRemoteObject.showBusyCursor=false;
+    }
+    
+    public function get remote(): RemoteObject
+    {
+        return traceRemoteObject;
+    }
+    
+    public function addObsel(obsel: Obsel): Obsel
+    {
+        if (obsel.uid == 0)
+            obsel.uid = this.uid;
+        
+        obsel.trace = this;
+        
+        this.obsels.addItem(obsel);
+        
+        if (this.autosync)
+        {
+            obsel.toSGBD();
+        }
+        return obsel;
+    }
+    public function delObsel(obsel :Obsel):void
+    {
+        obsel.trace = this;
+        if(this.autosync)
+        {
+            obsel.deleteObselSGBD();
+        }
+    }
+    public function updObsel(obsel:Obsel):void
+    {
+        obsel.trace = this;
+        
+        if(this.autosync)
+        {
+            obsel.updateObselSGBD();
+        }
+    }
+    
+    /**
+     * Return the set of obsels matching type.
+     */
+    public function filter(type: String): ArrayCollection
+    {
+        var result: ArrayCollection = new ArrayCollection();
+        
+        for each (var obs: Obsel in this.obsels)
+        {
+            if (obs.type == type)
+            {
+                result.addItem(obs);
+            }
+        }
+        return result;
+    }
+    
+    override public function toString(): String
+    {
+        return "Trace with " + this.obsels.length + " element(s)";
+    }
+    
+    /**
+     * Returns the Singleton instance of the Trace
+     */
+    public static function getInstance(uid: int = 0, uri: String = "") : Trace
+    {
+        if (instance == null)
+        {
+            instance = new Trace(uid, uri);
+        }
+        return instance;
+    }
+    
+    /**
+     * Convenience static method to quickly create an Obsel and
+     * add it to the trace (singleton).
+     */
+    public static function trace(type: String, props: Object = null): Obsel
+    {
+        var o: Obsel;
+        
+        try
+        {
+            o = new Obsel(type, instance.uid, props);
+            instance.addObsel(o);
+            
+            logger.debug("\n===\n" + o.toRDF() + "\n===\n");
+        }
+        catch (error:Error)
+        {
+            logger.debug("Exception in trace: " + error);
+        }
+        return o;
+    }
+    
+}
 
 }

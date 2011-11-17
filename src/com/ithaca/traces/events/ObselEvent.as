@@ -62,35 +62,35 @@
  */
 package  com.ithaca.traces.events
 {	
-	import com.ithaca.traces.Obsel;
+    import com.ithaca.traces.Obsel;
 	
-	import flash.events.Event;
+    import flash.events.Event;
 	
-	public class ObselEvent extends Event
+    public class ObselEvent extends Event
 	{
-		// constants
-		static public const EDIT_OBSEL : String = 'editObsel';
-		static public const EDIT_OBSEL_COMMENT : String = 'editObselComment';
-		static public const UPDATE_DURATION_OBSEL_COMMENT : String = 'updateDurationObselComment';
-		static public const PRE_EDIT_OBSEL_COMMENT_BY_SKIN_COMMENT : String = 'preEditObselCommentBySkinComment';
-		static public const PRE_EDIT_OBSEL_MARKER_BY_SKIN_MARKER : String = 'preEditObselMarkerBySkinMarker';
-		static public const DELETE_OBSEL : String = 'deleteObsel';
+        // constants
+        static public const EDIT_OBSEL : String = 'editObsel';
+        static public const EDIT_OBSEL_COMMENT : String = 'editObselComment';
+        static public const UPDATE_DURATION_OBSEL_COMMENT : String = 'updateDurationObselComment';
+        static public const PRE_EDIT_OBSEL_COMMENT_BY_SKIN_COMMENT : String = 'preEditObselCommentBySkinComment';
+        static public const PRE_EDIT_OBSEL_MARKER_BY_SKIN_MARKER : String = 'preEditObselMarkerBySkinMarker';
+        static public const DELETE_OBSEL : String = 'deleteObsel';
 		
-		static public const MOUSE_DOWN_OBSEL : String = 'mouseDownObsel';
+        static public const MOUSE_DOWN_OBSEL : String = 'mouseDownObsel';
 		
-		// properties
-		public var obsel : Obsel;
-		public var value:Object;
-		public var event:Object;
+        // properties
+        public var obsel : Obsel;
+        public var value:Object;
+        public var event:Object;
 		
-		// constructor
-		public function ObselEvent(type : String,
-			bubbles : Boolean = true,
-			cancelable : Boolean = false)
-		{
-			super(type, bubbles, cancelable);
-		}
+        // constructor
+        public function ObselEvent(type : String,
+            bubbles : Boolean = true,
+            cancelable : Boolean = false)
+        {
+            super(type, bubbles, cancelable);
+        }
 		
-		// methods
-	}
+        // methods
+    }
 }
