@@ -128,6 +128,7 @@ public final class TraceModel
     public static const IMAGE: String = "image";
     public static const VIDEO: String = "video";
     public static const COMMENT_FOR_USER_ID: String = "commentforuserid";
+    public static const MARKER_FOR_USER_ID: String = "idUserFor";
     
     // RETROROOM ACTIVITY
     
