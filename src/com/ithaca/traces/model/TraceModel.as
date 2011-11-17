@@ -62,7 +62,6 @@
  */
 package com.ithaca.traces.model
 {
-import com.youtube.player.events.PlayerSharedEvent;
 
 /* Generated code, see below */
 public final class TraceModel
@@ -97,12 +96,12 @@ public final class TraceModel
     public static const DELETE_TEXT_COMMENT: String = "DeleteTextComment";
     public static const UPDATE_TEXT_COMMENT: String = "UpdateTextComment";
     // get value like name obsel from PlayerSharedEvent
-    public static const PLAY_VIDEO: String = PlayerSharedEvent.PLAY;
-    public static const PAUSE_VIDEO: String = PlayerSharedEvent.PAUSE;
-    public static const END_VIDEO: String = PlayerSharedEvent.END;
-    public static const STOP_VIDEO: String = PlayerSharedEvent.STOP;
-    public static const PRESS_SLIDER_VIDEO: String = PlayerSharedEvent.SLIDER_PRESS;
-    public static const RELEASE_SLIDER_VIDEO: String = PlayerSharedEvent.SLIDER_RELEASE;
+    public static const PLAY_VIDEO: String = "PlayDocumentVideo";
+    public static const PAUSE_VIDEO: String = "PauseDocumentVideo";
+    public static const END_VIDEO: String = "EndDocumentVideo";
+    public static const STOP_VIDEO: String = "StopDocumentVideo";
+    public static const PRESS_SLIDER_VIDEO: String = "SliderPressDocumentVideo";
+    public static const RELEASE_SLIDER_VIDEO: String = "SliderReleaseDocumentVideo";
     
     public static const UID: String = "uid";
     public static const SENDER: String = "sender";
