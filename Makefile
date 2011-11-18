@@ -6,5 +6,9 @@ CLASSES:=$(shell find src -name "*.as" | sed 's/src\///; s/\.as//; s/\//./g')
 
 all: $(SWC)
 
+clean:
+	-$(RM) $(SWC)
+	-$(RM) -rf bin/generated
+
 $(SWC): $(DEPFILES)
 	"${SDKHOME}compc" -output "$@" -include-classes $(CLASSES) -source-path src
