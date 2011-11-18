@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<project name="Traces" default="main" basedir=".">
+  <property name="FLEX_HOME" value="../flex_sdk_4.5.1" />
+  <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+  <property name="APP_SRC" value="${basedir}/src"/>
+  <property name="OUTPUT" value="${basedir}/bin/Traces.swc"/>
+
+  <target name="main" depends="clean,compile"/>
+  <target name="clean">
+    <delete dir="${OUTPUT}"/>
+  </target>
+  <target name="compile">   
+    <fileset dir="${APP_SRC}" id="src.files">
+      <include name="**/**"/>
+    </fileset>
+    <pathconvert property="src_classes" pathsep=" " dirsep="." refid="src.files">  
+      <map from="\" to="/"/>  
+      <map from="${APP_SRC}/" to=""/>  
+      <mapper> 
+        <chainedmapper>  
+          <globmapper from="*.as" to="*"/>  
+        </chainedmapper>  
+      </mapper>  
+    </pathconvert>
+    <compc output="${OUTPUT}" 
+           include-classes="${src_classes}" 
+           actionscript-file-encoding="UTF-8" 
+           keep-generated-actionscript="true" 
+           static-link-runtime-shared-libraries="true" 
+           debug="true">
+      <source-path path-element="${APP_SRC}" />   
+<!--      <compiler.library-path dir="${basedir}" append="true">
+        <include name="libs" />
+      </compiler.library-path> -->
+    </compc>
+  </target>
+</project>
