@@ -8,7 +8,6 @@ all: $(SWC)
 
 clean:
 	-$(RM) $(SWC)
-	-$(RM) -rf bin/generated
 
 $(SWC): $(DEPFILES)
-	"${SDKHOME}compc" -output "$@" -include-classes $(CLASSES) -source-path src
+	"${SDKHOME}compc" -swf-version 11 -output "$@" -include-classes $(CLASSES) -source-path src
