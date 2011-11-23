@@ -271,7 +271,7 @@ public class Obsel extends EventDispatcher implements IResponder
         }
         else
         {
-            a = s.match(/^"(.+)"$/);
+            a = s.match(/^"(.*)"$/);
             if (a)
             {
                 // String
@@ -279,7 +279,7 @@ public class Obsel extends EventDispatcher implements IResponder
             }
             else
             {
-                a = s.match(/^<(.+)>$/);
+                a = s.match(/^<(.*)>$/);
                 if (a)
                 {
                     // Reference. Consider as a string for the moment.
