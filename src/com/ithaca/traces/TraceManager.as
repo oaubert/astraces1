@@ -93,7 +93,7 @@ public class TraceManager
     /**
      * Singleton instance of the TraceManager
      */
-    private static var instance: TraceManager;
+    private static var instance: TraceManager = null;
 
     /**
      * alias->Trace mapping
@@ -101,6 +101,14 @@ public class TraceManager
     public var traces: Object;
 
     private static var logger: ILogger = Log.getLogger("com.ithaca.traces.TraceManager");
+
+    /**
+     * Constructor
+     */
+    public function TraceManager()
+    {
+        traces = new Object();
+    }
 
     /**
      * Register an existing trace in the TraceManager.
@@ -138,6 +146,7 @@ public class TraceManager
         }
         else
         {
+            logger.debug("initTrace: creating new trace: " + alias);
             // Not yet existing. Create a new one
             tr = new Trace(uid, uri);
             getInstance().traces[alias] = tr;
@@ -160,6 +169,7 @@ public class TraceManager
     {
         if (instance == null)
         {
+            logger.debug("Creating new TraceManager instance");
             instance = new TraceManager();
         }
         return instance;
