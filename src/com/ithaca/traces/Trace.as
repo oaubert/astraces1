@@ -73,30 +73,20 @@ import mx.rpc.remoting.RemoteObject;
 
 /**
  * Usage:
- * since the class is a singleton (common cairngorm idiocy^H^Hm)
- * we provide a helper static method, thus usage becomes:
  * - at application start, initialize the trace with the uid and possibly the URI:
- *   trace = new Trace(uri='http:...', uid=loggedUser.id);
+ *   myTrace = new Trace(uri='http:...', uid=loggedUser.id);
  * - to log an Obsel:
- *   import com.ithaca.traces.Trace;
- *   Trace.trace("PresenceStart", { email: loggedUser.mail, surname: loggedUser.firstname, name: loggedUser.lastName });
- 
- *
+ *   myTrace.trace("PresenceStart", { email: loggedUser.mail, surname: loggedUser.firstname, name: loggedUser.lastName });
  */
 [Bindable]
 public class Trace extends EventDispatcher
-{
-    /**
-     * Defines the Singleton instance of the Trace
-     */
-    private static var instance: Trace;
-    
+{    
     /**
      * Shared RemoteObject
      */
     public static var traceRemoteObject: RemoteObject;
-    
-    private static var logger:ILogger = Log.getLogger("com.ithaca.traces.Trace");
+
+    private var logger:ILogger = Log.getLogger("com.ithaca.traces.Trace");
     
     public var uri: String = "";
     public var uid: int = 0;
@@ -124,21 +114,11 @@ public class Trace extends EventDispatcher
         this.obsels = new ArrayCollection()
     }
     
-    public static function init_remote(server: String): void
-    {
-        // Initialise RemoteObject
-        traceRemoteObject = new RemoteObject();
-        traceRemoteObject.endpoint=server;
-        traceRemoteObject.destination = "ObselService";
-        traceRemoteObject.makeObjectsBindable=true;
-        traceRemoteObject.showBusyCursor=false;
-    }
-    
     public function get remote(): RemoteObject
     {
         return traceRemoteObject;
     }
-    
+
     public function addObsel(obsel: Obsel): Obsel
     {
         if (obsel.uid == 0)
@@ -193,31 +173,19 @@ public class Trace extends EventDispatcher
     {
         return "Trace with " + this.obsels.length + " element(s)";
     }
-    
+       
     /**
-     * Returns the Singleton instance of the Trace
+     * Convenience method to quickly create an Obsel and
+     * add it to the trace.
      */
-    public static function getInstance(uid: int = 0, uri: String = "") : Trace
-    {
-        if (instance == null)
-        {
-            instance = new Trace(uid, uri);
-        }
-        return instance;
-    }
-    
-    /**
-     * Convenience static method to quickly create an Obsel and
-     * add it to the trace (singleton).
-     */
-    public static function trace(type: String, props: Object = null): Obsel
+    public function trace(type: String, props: Object = null, begin: Number = 0, end: Number = 0): Obsel
     {
         var o: Obsel;
         
         try
         {
-            o = new Obsel(type, instance.uid, props);
-            instance.addObsel(o);
+            o = new Obsel(type, uid, props, begin, end);
+            addObsel(o);
             
             logger.debug("\n===\n" + o.toRDF() + "\n===\n");
         }
