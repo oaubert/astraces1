@@ -184,8 +184,7 @@ public class TraceManager
         }
         catch (error:Error)
         {
-            //logger.debug("Exception in trace: " + error);
-            trace("debug", "Exception in trace: " + error);
+            logger.debug("Exception in trace: " + error);
         }
         return o;
     }
