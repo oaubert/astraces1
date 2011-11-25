@@ -98,7 +98,7 @@ public class Obsel extends EventDispatcher implements IResponder
     
     /* These will be initialized once the Obsel has been added to
     * a trace */
-    public var uri: String = null;
+    public var uri: String = "";
     public var trace: Trace = null;
     
     public var sgbdobsel: SGBDObsel = null;
