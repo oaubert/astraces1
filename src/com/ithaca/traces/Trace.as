@@ -119,6 +119,16 @@ public class Trace extends EventDispatcher
         return traceRemoteObject;
     }
 
+    public static function init_remote(server: String): void
+    {
+        // Initialise RemoteObject
+        traceRemoteObject = new RemoteObject();
+        traceRemoteObject.endpoint=server;
+        traceRemoteObject.destination = "ObselService";
+        traceRemoteObject.makeObjectsBindable=true;
+        traceRemoteObject.showBusyCursor=false;
+    } 
+
     public function addObsel(obsel: Obsel): Obsel
     {
         if (obsel.uid == 0)
