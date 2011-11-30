@@ -262,8 +262,10 @@ public class Obsel extends EventDispatcher implements IResponder
         }
         else
         {
-            // FIXME: quoting is not robust: we should double-escape \
-            res = '"' + val.toString().replace(quote_regexp, '\\"').replace(eol_regexp, "\\n").replace('\\\\', '\\') + '"';
+            // FIXME: quoting is not complete: http://www.w3.org/TeamSubmission/turtle/#sec-strings
+            // \uXXXX and \UXXXX is missing.
+            // multiple replace() calls are not efficient, since we walk through the same string multiple times.
+            res = '"' + val.toString().replace('\\', '\\\\').replace(quote_regexp, '\\"').replace(eol_regexp, "\\n").replace("\t", "\\t").replace("\r", "\\r") + '"';
         }
         return res;
     }
@@ -286,7 +288,7 @@ public class Obsel extends EventDispatcher implements IResponder
             if (a)
             {
                 // String
-                res = a[1].replace('\\"', '"').replace('\\n', "\n");
+                res = a[1].replace('\\"', '"').replace('\\n', "\n").replace("\\t", "\t").replace("\\r", "\r").replace('\\\\', '\\');
             }
             else
             {
