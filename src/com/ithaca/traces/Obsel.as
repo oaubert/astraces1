@@ -104,7 +104,7 @@ public class Obsel extends EventDispatcher implements IResponder
     public var sgbdobsel: SGBDObsel = null;
     
     private static var quote_regexp: RegExp = /"/g;
-    private static var eol_regexp: RegExp = /\r/g;
+    private static var eol_regexp: RegExp = /[\r\n]/g;
     
     private static var logger:ILogger = Log.getLogger("com.ithaca.traces.Obsel");
     
