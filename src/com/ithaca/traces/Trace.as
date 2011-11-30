@@ -113,7 +113,35 @@ public class Trace extends EventDispatcher
         this.uid = uid;
         this.obsels = new ArrayCollection()
     }
-    
+
+    /**
+     * Update the given trace from a TTL serialization.
+     *
+     * If reset is true, then first remove all existing obsels from
+     * the trace.
+     */
+    public function updateFromRDF(ttl: String, reset: Boolean = true): void
+    {
+        if (reset)
+            this.obsels.removeAll();
+
+        //we split the ttl on each "." line (kind of an "end of instruction" in ttl (?))
+        var ar:Array = ttl.split("\n.\n");
+        
+        for each (var l: String in ar)
+        {
+            // Append the trailing . again to get a valid TTL serialization.
+            l = l + "\n.\n";
+            
+            var obs: Obsel = new Obsel("temp");
+            obs.updateFromRDF(l);
+            
+            //if the initialization from the ttl chunk is ok, we add the obsel to the trace
+            if (obs.type != "temp")
+                this.addObsel(obs);
+        }
+    }
+  
     public function get remote(): RemoteObject
     {
         return traceRemoteObject;
