@@ -125,7 +125,18 @@ public class Obsel extends EventDispatcher implements IResponder
                 this.props[prop] = props[prop];
         }
     }
-    
+
+    /**
+     * Clone the current obsel
+     *
+     * Note: it does not copy the Trace and uri values. These fields
+     * are initialized when the Obsel is added to the trace.
+     */
+    public function clone(): Obsel
+    {
+        return new Obsel(this.type, this.uid, this.props, this.begin, this.end);
+    }
+
     // IResponder interface implementation
     public function result(data: Object): void
     {
@@ -252,7 +263,7 @@ public class Obsel extends EventDispatcher implements IResponder
         else
         {
             // FIXME: quoting is not robust: we should double-escape \
-            res = '"' + val.toString().replace(quote_regexp, '\\"').replace(eol_regexp, "\\n") + '"';
+            res = '"' + val.toString().replace(quote_regexp, '\\"').replace(eol_regexp, "\\n").replace('\\\\', '\\') + '"';
         }
         return res;
     }
