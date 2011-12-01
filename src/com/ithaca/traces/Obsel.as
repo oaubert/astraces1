@@ -107,7 +107,7 @@ public class Obsel extends EventDispatcher implements IResponder
     private static var eol_regexp: RegExp = /[\r\n]/g;
     
     private static var logger:ILogger = Log.getLogger("com.ithaca.traces.Obsel");
-    
+
     public function Obsel(my_type: String, uid: int = 0, props: Object=null, begin: Number = 0, end: Number = 0)
     {
         this.type = my_type;
@@ -298,12 +298,23 @@ public class Obsel extends EventDispatcher implements IResponder
                     // Reference. Consider as a string for the moment.
                     res = a[1];
                 }
-                else
-                {
-                    // Should be an integer
-                    res = Number(s);
-                    //if (isTime)
-                    //    res = res / TIME_FACTOR;
+                else {
+                    a = s.match(/^\s*"(.*)"\^\^\<(.+)>$/);
+                    if (a)
+                    {
+                        if (a[2] == "http://www.w3.org/2001/XMLSchema#integer")
+                            res = Number(a[1])
+                        else
+                            // Consider as a string
+                            res = a[1].replace('\\"', '"').replace('\\n', "\n").replace("\\t", "\t").replace("\\r", "\r").replace('\\\\', '\\');
+                    }
+                    else
+                    {
+                        // Should be an integer
+                        res = Number(s);
+                        //if (isTime)
+                        //    res = res / TIME_FACTOR;
+                    }
                 }
             }
         }
