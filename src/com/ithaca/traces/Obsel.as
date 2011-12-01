@@ -357,13 +357,16 @@ public class Obsel extends EventDispatcher implements IResponder
         for each (var l: String in rdf.split(/\n/))
         {
             l = StringUtil.trim(l);
+            // Single . on a line by itself
             if (l == ".")
                 break;
             //trace("Processing " + l);
-            a = l.match(/.+\s+a\s+:(\w+)\s*;/);
+            a = l.match(/(.+)\s+a\s+([:\w]+)\s*;/);
             if (a)
             {
-                this.type = a[1];
+                this.type = a[2];
+                // FIXME: add trace URI as basename?
+                this.uri = a[1];
                 a = null;
                 inData = true;
                 continue;
@@ -387,7 +390,7 @@ public class Obsel extends EventDispatcher implements IResponder
                 listData.push(repr2value(l));
                 continue;
             }
-            a = l.match(/^(?:ktbs|):has(\w+)\s+(.+?)\s*;?$/);
+            a = l.match(/^(?:ktbs|):has(\w+)\s+(.+?)\s*([;\.]?)$/);
             if (a)
             {
                 /*
@@ -404,7 +407,10 @@ public class Obsel extends EventDispatcher implements IResponder
                     // FIXME: there may be data just after the (, this case is not taken into account here.
                     listData = new Array();
                     this.props[name] = listData;
-                    continue;
+                    if (a[3] == ".")
+                        break
+                    else
+                        continue;
                 }
                 else switch (name)
                 {
@@ -429,6 +435,8 @@ public class Obsel extends EventDispatcher implements IResponder
                         this.props[name] = repr2value(data);
                     break;
                 }
+                if (a[3] == ".")
+                    break;
             }
             else
             {

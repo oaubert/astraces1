@@ -126,13 +126,14 @@ public class Trace extends EventDispatcher
             this.obsels.removeAll();
 
         //we split the ttl on each "." line (kind of an "end of instruction" in ttl (?))
-        var ar:Array = ttl.split("\n.\n");
+        var ar:Array = ttl.split(/\.\s*$/m);
         
         for each (var l: String in ar)
         {
             // Append the trailing . again to get a valid TTL serialization.
             l = l + "\n.\n";
-            
+            //logger.info("Parsing\n=====================================" + l + "\n============================");
+
             var obs: Obsel = new Obsel("temp");
             obs.updateFromRDF(l);
             
@@ -225,7 +226,7 @@ public class Trace extends EventDispatcher
             o = new Obsel(type, uid, props, begin, end);
             addObsel(o);
             
-            logger.debug("\n===\n" + o.toRDF() + "\n===\n");
+            //logger.debug("\n===\n" + o.toRDF() + "\n===\n");
         }
         catch (error:Error)
         {
