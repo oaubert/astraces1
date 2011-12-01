@@ -67,6 +67,7 @@ package com.ithaca.traces.model.vo
     * Serializable object binding to the corresponding object on the
     * server side (java).
     */
+    [RemoteClass(alias="com.ithaca.domain.model.Obsel")]
     [Bindable]
     public class SGBDObsel
     {
