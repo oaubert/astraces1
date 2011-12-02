@@ -379,7 +379,7 @@ public class Obsel extends EventDispatcher implements IResponder
                 if (prefix == "")
                     this.type = a[3];
                 else
-                    this.type = prefix + ":" + a[3]
+                    this.type = prefix + ":" + a[3];
                 // FIXME: add trace URI as basename?
                 this.uri = a[1];
                 a = null;
