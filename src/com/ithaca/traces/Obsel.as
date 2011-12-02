@@ -372,10 +372,14 @@ public class Obsel extends EventDispatcher implements IResponder
             if (l == ".")
                 break;
             //trace("Processing " + l);
-            a = l.match(/(.+)\s+a\s+([:\w]+)\s*;/);
+            a = l.match(/(.+)\s+a\s+(\w*):(\w+)\s*;/);
             if (a)
             {
-                this.type = a[2];
+                var prefix: String = a[2];
+                if (prefix == "")
+                    this.type = a[3];
+                else
+                    this.type = prefix + ":" + a[3]
                 // FIXME: add trace URI as basename?
                 this.uri = a[1];
                 a = null;
