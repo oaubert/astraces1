@@ -341,7 +341,13 @@ public class Obsel extends EventDispatcher implements IResponder
             '  ktbs:hasSubject "' + this.uid + '" ;');
         for (var prop: String in this.props)
         {
-            res.push("  :has" + prop.charAt(0).toUpperCase() + prop.substr(1) + " " + value2repr(this.props[prop], (prop.indexOf('timestamp') == -1 ? false : true) ) + " ;");
+            var name: String = prop;
+            if (prop.indexOf(":") == -1)
+            {
+                /* No : in property name: old convention foo -> :hasFoo */
+                name = ":has" + prop.charAt(0).toUpperCase() + prop.substr(1);
+            }
+            res.push("  " + name + " " + value2repr(this.props[prop], (prop.indexOf('timestamp') == -1 ? false : true) ) + " ;");
         }
         res.push(".");
         
@@ -367,6 +373,9 @@ public class Obsel extends EventDispatcher implements IResponder
         
         for each (var l: String in rdf.split(/\n/))
         {
+            /* FIXME: now that we support new convention, we should
+             * store the prefix/namespace information, in the trace
+             * possibly, to be able to re-encode it */
             l = StringUtil.trim(l);
             // Single . on a line by itself
             if (l == ".")
@@ -405,7 +414,7 @@ public class Obsel extends EventDispatcher implements IResponder
                 listData.push(repr2value(l));
                 continue;
             }
-            a = l.match(/^(?:ktbs|):has(\w+)\s+(.+?)\s*([;\.]?)$/);
+            a = l.match(/^(\w*):(\w+)\s+(.+?)\s*([;\.]?)$/);
             if (a)
             {
                 /*
@@ -414,8 +423,23 @@ public class Obsel extends EventDispatcher implements IResponder
                 trace("Property " + i + ": " + a[i]);
                 }
                 */
-                var name: String = a[1].charAt(0).toLowerCase() + a[1].substr(1);
-                var data: String = a[2];
+                var idprefix: String = a[1];
+                var identifier: String = a[2];
+                var data: String = a[3];
+
+                var name: String = prefix + ":" + identifier;
+                if (idprefix == "" && identifier.substr(0, 3) == "has")
+                {
+                    /* Ascending compatibility with the old model
+                     * convention of having the foo property
+                     * encoded as :hasFoo */
+                    /* To encode back, the principle is: if there
+                     * is no : in the name, then it follows the
+                     * old convention, and has to be encoded as
+                     * hasFoo */
+                    name = identifier.charAt(3).toLowerCase() + identifier.substr(4);
+                }
+
                 if (data == "(")
                 {
                     // Beginning of a list
@@ -429,17 +453,17 @@ public class Obsel extends EventDispatcher implements IResponder
                 }
                 else switch (name)
                 {
-                case "begin":
-                case "end":
+                case "ktbs:begin":
+                case "ktbs:end":
                     // Convert seconds back to ms
                     this[name] = repr2value(data, true)
                     // Let's hope actionscript will use this
                     // break to get out the switch scope, and
                     // not out of the loop.
                     break;
-                case "subject":
+                case "ktbs:subject":
                     this.uid = repr2value(data);
-                case "trace":
+                case "ktbs:trace":
                     // We should check against the destination trace URI/id
                     break;
                 default:
