@@ -221,10 +221,10 @@ public class Obsel extends EventDispatcher implements IResponder
     }
     override public function toString(): String
     {
-        var s: String = "Obsel " + this.type + " [" + this.uid + "] : (" ;
+        var s: String = "Obsel " + this.type + " [" + this.uid + "] (" + this.begin + " - " + this.end + ")\n{" ;
         for (var p: String in this.props)
             s = s + p + "=" + this.props[p].toString().replace("\n", "\\n") + ", "
-        s = s + ")"
+        s = s + "}"
         return s;
     }
     
