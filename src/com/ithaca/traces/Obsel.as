@@ -426,6 +426,7 @@ public class Obsel extends EventDispatcher implements IResponder
                 var idprefix: String = a[1];
                 var identifier: String = a[2];
                 var data: String = a[3];
+                var eol: String = a[4];
 
                 var name: String = idprefix + ":" + identifier;
                 if (idprefix == "" && identifier.substr(0, 3) == "has")
@@ -446,7 +447,7 @@ public class Obsel extends EventDispatcher implements IResponder
                     // FIXME: there may be data just after the (, this case is not taken into account here.
                     listData = new Array();
                     this.props[name] = listData;
-                    if (a[3] == ".")
+                    if (eol == ".")
                         break
                     else
                         continue;
@@ -454,15 +455,19 @@ public class Obsel extends EventDispatcher implements IResponder
                 else switch (name)
                 {
                 case "ktbs:hasBegin":
+                    // Convert seconds back to ms
+                    this.begin = repr2value(data, true);
+                    break;
                 case "ktbs:hasEnd":
                     // Convert seconds back to ms
-                    this[name] = repr2value(data, true)
+                    this.end = repr2value(data, true);
                     // Let's hope actionscript will use this
                     // break to get out the switch scope, and
                     // not out of the loop.
                     break;
                 case "ktbs:hasSubject":
                     this.uid = repr2value(data);
+                    break;
                 case "ktbs:hasTrace":
                     // We should check against the destination trace URI/id
                     break;
@@ -474,7 +479,7 @@ public class Obsel extends EventDispatcher implements IResponder
                         this.props[name] = repr2value(data);
                     break;
                 }
-                if (a[3] == ".")
+                if (eol == ".")
                     break;
             }
             else
