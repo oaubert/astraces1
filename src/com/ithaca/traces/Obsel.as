@@ -427,7 +427,7 @@ public class Obsel extends EventDispatcher implements IResponder
                 var identifier: String = a[2];
                 var data: String = a[3];
 
-                var name: String = prefix + ":" + identifier;
+                var name: String = idprefix + ":" + identifier;
                 if (idprefix == "" && identifier.substr(0, 3) == "has")
                 {
                     /* Ascending compatibility with the old model
