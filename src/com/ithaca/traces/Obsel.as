@@ -453,17 +453,17 @@ public class Obsel extends EventDispatcher implements IResponder
                 }
                 else switch (name)
                 {
-                case "ktbs:begin":
-                case "ktbs:end":
+                case "ktbs:hasBegin":
+                case "ktbs:hasEnd":
                     // Convert seconds back to ms
                     this[name] = repr2value(data, true)
                     // Let's hope actionscript will use this
                     // break to get out the switch scope, and
                     // not out of the loop.
                     break;
-                case "ktbs:subject":
+                case "ktbs:hasSubject":
                     this.uid = repr2value(data);
-                case "ktbs:trace":
+                case "ktbs:hasTrace":
                     // We should check against the destination trace URI/id
                     break;
                 default:
