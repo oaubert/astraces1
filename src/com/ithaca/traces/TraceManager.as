@@ -179,7 +179,7 @@ public class TraceManager
      * Convenience static method to quickly create an Obsel and
      * add it to the specified trace.
      */
-    public static function trace(alias: String, type: String, props: Object = null): Obsel
+    public static function trace(alias: String, type: String, props: Object = null, begin: Number = 0, end: Number = 0): Obsel
     {
         var o: Obsel;
         var t: Trace;
@@ -190,7 +190,7 @@ public class TraceManager
 
         try
         {
-            o = t.trace(type, props);
+            o = t.trace(type, props, begin, end);
         }
         catch (error:Error)
         {
