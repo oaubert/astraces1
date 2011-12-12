@@ -92,6 +92,11 @@ public class Trace extends EventDispatcher
     public var uid: int = 0;
     
     public var obsels: ArrayCollection;
+
+    public var fusionedObselTypes: Object = new Object();
+    private var fusionBuffer: Vector.<Obsel> = new Vector.<Obsel>();
+    public var lastObsel: Obsel = null;
+
     /* If True, automatically synchronize with the KTBS */
     public var autosync: Boolean = true;
     
@@ -158,6 +163,27 @@ public class Trace extends EventDispatcher
         traceRemoteObject.showBusyCursor=false;
     } 
 
+    /**
+     * Declare an obsel type that should be fusioned.
+     *
+     * For obsels that can be generated in sequential quantities (such
+     * as the variation of the position of a slider), generating one
+     * event for each position change is too heavy and generated many
+     * obsels.
+     *
+     * We can declare this kind of type as
+     * FusionedTypes. Trace.trace() will then bufferize obsels of
+     * given type, until an obsel of a different type is sent. In this
+     * case, the buffer obsels will be concatenated into a single
+     * Fusioned<Type>, which will possess List<prop> attributes for
+     * each <prop> property of the original obsels. The List<prop>
+     * attributes will contain the list of successive values.
+     */
+    public function addFusionedType(typ: String): void
+    {
+        this.fusionedObselTypes[typ] = true;
+    }
+
     public function addObsel(obsel: Obsel): Obsel
     {
         if (obsel.uid == 0)
@@ -214,18 +240,82 @@ public class Trace extends EventDispatcher
     }
        
     /**
+     * Flush fusion buffer
+     *
+     * Create a new Obsel by gathering data from fusionBuffer
+     * contents. It begin is the begin time of the first obsel, its
+     * end time is the begin time of the last obsel.
+     */
+    private function flushFusionBuffer(): void
+    {
+        var prop: String;
+        var ref: Obsel;
+
+        if (this.fusionBuffer.length == 0)
+            return;
+        
+        ref = this.fusionBuffer[0];
+
+        /* Use first obsel as reference */
+        var o: Obsel = new Obsel("Fusioned" + ref.type,
+                                 ref.uid,
+                                 null,
+                                 ref.begin,
+                                 this.fusionBuffer[this.fusionBuffer.length - 1].begin);
+        for (prop in ref.props)
+        {
+            o.props[prop + "List"] = new Array();
+        }
+
+        /* Fusion data */
+        for each (var obs: Obsel in this.fusionBuffer)
+        {
+            for (prop in ref.props)
+            {
+                o.props[prop + "List"].push(obs.props[prop]);
+            }            
+        }
+        addObsel(o);
+        /* Clear fusion buffer */
+        /* 4294967295 : default value for splice(), from the doc:
+           http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/Vector.html#splice%28%29 */
+        fusionBuffer.splice(0, 4294967295); 
+    }
+
+    /**
+     * Flush possibly buffered data.
+     */
+    public function flush(): void
+    {
+        if (this.fusionBuffer.length != 0)
+        {
+            flushFusionBuffer();
+        }
+    }
+
+    /**
      * Convenience method to quickly create an Obsel and
      * add it to the trace.
      */
     public function trace(type: String, props: Object = null, begin: Number = 0, end: Number = 0): Obsel
     {
         var o: Obsel;
-        
+     
         try
         {
             o = new Obsel(type, uid, props, begin, end);
-            addObsel(o);
-            
+
+            if (this.lastObsel != null && this.lastObsel.type != type)
+                /* Flush buffer */
+                this.flushFusionBuffer();
+                
+            if (fusionedObselTypes.hasOwnProperty(type))
+                this.fusionBuffer.push(o)
+            else
+                /* Append new obsel */
+                this.addObsel(o);
+
+            this.lastObsel = o;
             //logger.debug("\n===\n" + o.toRDF() + "\n===\n");
         }
         catch (error:Error)
