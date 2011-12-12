@@ -15,4 +15,4 @@ clean:
 	-$(RM) $(SWC)
 
 $(SWC): $(DEPFILES)
-	"${SDKBIN}compc" -swf-version 11 -as3 -external-library-path+=$(SDKFRAMEWORK)/framework.swc -output "$@" -include-classes $(CLASSES) -source-path src
+	"${SDKBIN}compc" -swf-version 11 -debug=true -as3 -external-library-path+=$(SDKFRAMEWORK)/framework.swc -output "$@" -include-classes $(CLASSES) -source-path src
