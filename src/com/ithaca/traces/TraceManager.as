@@ -119,7 +119,7 @@ public class TraceManager
     {
         if (getInstance().traces.hasOwnProperty(alias))
         {
-            if (getTrace(alias) !== tr) 
+            if (getTrace(alias) !== tr)
             {
                 // Cannot overwrite an already existing class
                 throw new Error(alias + " is already registered for another class");

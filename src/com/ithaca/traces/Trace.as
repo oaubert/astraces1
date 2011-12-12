@@ -1,49 +1,49 @@
 /**
  * Copyright Université Lyon 1 / Université Lyon 2 (2009,2010,2011)
- * 
+ *
  * <ithaca@liris.cnrs.fr>
- * 
+ *
  * This file is part of Visu.
- * 
+ *
  * This software is a computer program whose purpose is to provide an
  * enriched videoconference application.
- * 
+ *
  * Visu is a free software subjected to a double license.
- * You can redistribute it and/or modify since you respect the terms of either 
+ * You can redistribute it and/or modify since you respect the terms of either
  * (at least one of the both license) :
- * - the GNU Lesser General Public License as published by the Free Software Foundation; 
- *   either version 3 of the License, or any later version. 
+ * - the GNU Lesser General Public License as published by the Free Software Foundation;
+ *   either version 3 of the License, or any later version.
  * - the CeCILL-C as published by CeCILL; either version 2 of the License, or any later version.
- * 
+ *
  * -- GNU LGPL license
- * 
+ *
  * Visu is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Visu is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with Visu.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * -- CeCILL-C license
- * 
+ *
  * This software is governed by the CeCILL-C license under French law and
- * abiding by the rules of distribution of free software.  You can  use, 
+ * abiding by the rules of distribution of free software.  You can  use,
  * modify and/ or redistribute the software under the terms of the CeCILL-C
  * license as circulated by CEA, CNRS and INRIA at the following URL
- * "http://www.cecill.info". 
- * 
+ * "http://www.cecill.info".
+ *
  * As a counterpart to the access to the source code and  rights to copy,
  * modify and redistribute granted by the license, users are provided only
  * with a limited warranty  and the software's author,  the holder of the
  * economic rights,  and the successive licensors  have only  limited
- * liability. 
- * 
+ * liability.
+ *
  * In this respect, the user's attention is drawn to the risks associated
  * with loading,  using,  modifying and/or developing or reproducing the
  * software by the user in light of its specific status of free software,
@@ -51,13 +51,13 @@
  * therefore means  that it is reserved for developers  and  experienced
  * professionals having in-depth computer knowledge. Users are therefore
  * encouraged to load and test the software's suitability as regards their
- * requirements in conditions enabling the security of their systems and/or 
- * data to be ensured and,  more generally, to use and operate it in the 
- * same conditions as regards security. 
- * 
+ * requirements in conditions enabling the security of their systems and/or
+ * data to be ensured and,  more generally, to use and operate it in the
+ * same conditions as regards security.
+ *
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C license and that you accept its terms.
- * 
+ *
  * -- End of licenses
  */
 package com.ithaca.traces
@@ -80,17 +80,17 @@ import mx.rpc.remoting.RemoteObject;
  */
 [Bindable]
 public class Trace extends EventDispatcher
-{    
+{
     /**
      * Shared RemoteObject
      */
     public static var traceRemoteObject: RemoteObject;
 
     private var logger:ILogger = Log.getLogger("com.ithaca.traces.Trace");
-    
+
     public var uri: String = "";
     public var uid: int = 0;
-    
+
     public var obsels: ArrayCollection;
 
     public var fusionedObselTypes: Object = new Object();
@@ -99,7 +99,7 @@ public class Trace extends EventDispatcher
 
     /* If True, automatically synchronize with the KTBS */
     public var autosync: Boolean = true;
-    
+
     public function twoDigits(n: int): String
     {
         if (n < 10)
@@ -107,7 +107,7 @@ public class Trace extends EventDispatcher
         else
             return n.toString();
     }
-    
+
     public function Trace(uid: int = 0, uri: String = ""): void
     {
         var d: Date = new Date();
@@ -132,7 +132,7 @@ public class Trace extends EventDispatcher
 
         //we split the ttl on each "." line (kind of an "end of instruction" in ttl (?))
         var ar:Array = ttl.split(/\.\s*$/m);
-        
+
         for each (var l: String in ar)
         {
             // Append the trailing . again to get a valid TTL serialization.
@@ -141,13 +141,13 @@ public class Trace extends EventDispatcher
 
             var obs: Obsel = new Obsel("temp");
             obs.updateFromRDF(l);
-            
+
             //if the initialization from the ttl chunk is ok, we add the obsel to the trace
             if (obs.type != "temp")
                 this.addObsel(obs);
         }
     }
-  
+
     public function get remote(): RemoteObject
     {
         return traceRemoteObject;
@@ -161,7 +161,7 @@ public class Trace extends EventDispatcher
         traceRemoteObject.destination = "ObselService";
         traceRemoteObject.makeObjectsBindable=true;
         traceRemoteObject.showBusyCursor=false;
-    } 
+    }
 
     /**
      * Declare an obsel type that should be fusioned.
@@ -188,11 +188,11 @@ public class Trace extends EventDispatcher
     {
         if (obsel.uid == 0)
             obsel.uid = this.uid;
-        
+
         obsel.trace = this;
-        
+
         this.obsels.addItem(obsel);
-        
+
         if (this.autosync)
         {
             obsel.toSGBD();
@@ -210,20 +210,20 @@ public class Trace extends EventDispatcher
     public function updObsel(obsel:Obsel):void
     {
         obsel.trace = this;
-        
+
         if(this.autosync)
         {
             obsel.updateObselSGBD();
         }
     }
-    
+
     /**
      * Return the set of obsels matching type.
      */
     public function filter(type: String): ArrayCollection
     {
         var result: ArrayCollection = new ArrayCollection();
-        
+
         for each (var obs: Obsel in this.obsels)
         {
             if (obs.type == type)
@@ -233,12 +233,12 @@ public class Trace extends EventDispatcher
         }
         return result;
     }
-    
+
     override public function toString(): String
     {
         return "Trace with " + this.obsels.length + " element(s)";
     }
-       
+
     /**
      * Flush fusion buffer
      *
@@ -253,7 +253,7 @@ public class Trace extends EventDispatcher
 
         if (this.fusionBuffer.length == 0)
             return;
-        
+
         ref = this.fusionBuffer[0];
 
         /* Use first obsel as reference */
@@ -273,13 +273,13 @@ public class Trace extends EventDispatcher
             for (prop in ref.props)
             {
                 o.props[prop + "List"].push(obs.props[prop]);
-            }            
+            }
         }
         addObsel(o);
         /* Clear fusion buffer */
         /* 4294967295 : default value for splice(), from the doc:
            http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/Vector.html#splice%28%29 */
-        fusionBuffer.splice(0, 4294967295); 
+        fusionBuffer.splice(0, 4294967295);
     }
 
     /**
@@ -300,7 +300,7 @@ public class Trace extends EventDispatcher
     public function trace(type: String, props: Object = null, begin: Number = 0, end: Number = 0): Obsel
     {
         var o: Obsel;
-     
+
         try
         {
             o = new Obsel(type, uid, props, begin, end);
@@ -308,7 +308,7 @@ public class Trace extends EventDispatcher
             if (this.lastObsel != null && this.lastObsel.type != type)
                 /* Flush buffer */
                 this.flushFusionBuffer();
-                
+
             if (fusionedObselTypes.hasOwnProperty(type))
                 this.fusionBuffer.push(o)
             else
@@ -324,7 +324,7 @@ public class Trace extends EventDispatcher
         }
         return o;
     }
-    
+
 }
 
 }
