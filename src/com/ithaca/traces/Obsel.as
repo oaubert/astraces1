@@ -231,7 +231,7 @@ public class Obsel extends EventDispatcher implements IResponder
     /**
      * Convert a value to its turtle representation
      */
-    private static function value2repr(val: *, isTime: Boolean = false): String
+    public static function value2repr(val: *, isTime: Boolean = false): String
     {
         var res: String = "";
 
