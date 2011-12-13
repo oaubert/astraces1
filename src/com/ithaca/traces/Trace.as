@@ -325,6 +325,45 @@ public class Trace extends EventDispatcher
         return o;
     }
 
+    public function toTSV(): String
+    {
+        var o: Obsel;
+        var fields: Array = new Array();
+        var type2col: Object = new Object();
+        var row: Array = new Array();
+        var data: Array = new Array();
+        var p: String;
+
+        fields.push("ktbs:begin");
+        fields.push("ktbs:end");
+        fields.push("ktbs:type");
+        fields.push("ktbs:subject");
+        for (var i: int = 0; i < fields.length ; i++)
+            type2col[i] = i;
+
+        /* Convert a Trace to Tab-Separated-Value format */
+        for each (o in this.obsels)
+        {
+            row.splice(0, 4294967295);
+            row.push(Obsel.value2repr(o.begin));
+            row.push(Obsel.value2repr(o.end));
+            row.push(Obsel.value2repr(o.type));
+            row.push(Obsel.value2repr(o.uid));
+            for (p in o.props)
+            {
+                if (! type2col.hasOwnProperty(p))
+                {
+                    fields.push(p);
+                    type2col[p] = fields.length - 1;
+                }
+                row[type2col[p]] = Obsel.value2repr(o.props[p]);
+            }
+            // Print row
+            data.push(row.join("\t"));
+        }
+        data.unshift(fields.join("\t"));
+        return data.join("\n");
+    }
 }
 
 }
