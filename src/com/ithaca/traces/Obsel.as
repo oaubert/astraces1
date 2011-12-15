@@ -230,8 +230,11 @@ public class Obsel extends EventDispatcher implements IResponder
 
     /**
      * Convert a value to its turtle representation
+     *
+     * If isTime is true, then the value is treated as a timestamp.
+     * If oneLine is true, then all serializations (even for Arrays) will be rendered as one-liners.
      */
-    public static function value2repr(val: *, isTime: Boolean = false): String
+    public static function value2repr(val: *, isTime: Boolean = false, oneLine: Boolean = false): String
     {
         var res: String = "";
 
@@ -253,12 +256,13 @@ public class Obsel extends EventDispatcher implements IResponder
         }
         else if (val is Array)
         {
-            res="(\n";
-            for each (var v: * in val)
-            {
-                res = res + "        " + value2repr(v) + "\n";
-            }
-            res = res + ")";
+            var formatted: Array = val.map(function (o: Object, i: int, a: Array): String {
+                                              return value2repr(o);
+                                           })
+            if (oneLine)
+                res = "( " + formatted.join(", ") + " )";
+            else
+                res = "(\n        " + formatted.join("\n        ") + ")";
         }
         else
         {
