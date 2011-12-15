@@ -325,12 +325,18 @@ public class Trace extends EventDispatcher
         return o;
     }
 
+    /**
+     * Return a Tab-Separated-Values representation of the trace
+     *
+     * The table features one column per attribute.
+     */
+
     public function toTSV(): String
     {
         var o: Obsel;
         var fields: Array = new Array();
         var type2col: Object = new Object();
-        var row: Array = new Array();
+        var row: Vector.<String> = new Vector.<String>();
         var data: Array = new Array();
         var p: String;
 
@@ -345,10 +351,12 @@ public class Trace extends EventDispatcher
         for each (o in this.obsels)
         {
             row.splice(0, 4294967295);
-            row.push(Obsel.value2repr(o.begin));
-            row.push(Obsel.value2repr(o.end));
-            row.push(Obsel.value2repr(o.type));
-            row.push(Obsel.value2repr(o.uid));
+            row.length = fields.length;
+
+            row[0] = Obsel.value2repr(o.begin);
+            row[1] = Obsel.value2repr(o.end);
+            row[2] = Obsel.value2repr(o.type);
+            row[3] = Obsel.value2repr(o.uid);
             for (p in o.props)
             {
                 if (! type2col.hasOwnProperty(p))
@@ -356,8 +364,11 @@ public class Trace extends EventDispatcher
                     fields.push(p);
                     type2col[p] = fields.length - 1;
                 }
-                row[type2col[p]] = Obsel.value2repr(o.props[p]);
+                row[type2col[p]] = Obsel.value2repr(o.props[p], false, true)
             }
+            for (i = 0; i < row.length; i++)
+                if (row[i] === null)
+                    row[i] = "-";
             // Print row
             data.push(row.join("\t"));
         }
