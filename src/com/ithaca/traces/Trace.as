@@ -375,6 +375,17 @@ public class Trace extends EventDispatcher
         data.unshift(fields.join("\t"));
         return data.join("\n");
     }
+
+    /**
+     * Return a TTL representation of the trace.
+     */
+    public function toTTL(): String
+    {
+        var data: Array = new Array();
+        for each (var o: Obsel in this.obsels)
+            data.push(o.toRDF());
+        return data.join("\n\n");
+    }
 }
 
 }
