@@ -384,6 +384,9 @@ public class Obsel extends EventDispatcher implements IResponder
             // Single . on a line by itself
             if (l == ".")
                 break;
+            // Ignore empty lines
+            if (l == "")
+                continue;
             //trace("Processing " + l);
             a = l.match(/(.+)\s+a\s+(\w*):(\w+)\s*;/);
             if (a)
