@@ -64,12 +64,15 @@ package com.ithaca.traces
 {
 /* For remoting */
 
+import flash.utils.Timer;
 import flash.events.EventDispatcher;
+import flash.events.TimerEvent;
 
 import mx.collections.ArrayCollection;
 import mx.logging.ILogger;
 import mx.logging.Log;
 import mx.rpc.remoting.RemoteObject;
+import com.ithaca.traces.events.TraceEvent;
 
 /**
  * Usage:
@@ -100,6 +103,21 @@ public class Trace extends EventDispatcher
     /* If True, automatically synchronize with the KTBS */
     public var autosync: Boolean = true;
 
+    /* Timer used for non-blocking loading of obsels */
+    private var loadingTimer: Timer = null;
+    /* store information for loading: data array, index, etc.
+       The appropriate method would be to create a custom timer event,
+       but this will do for an interim code */
+    private var loadingInfo: Object = null;
+
+    /* Number of items to parse during a parsing iteration. Note that
+    it is not the number of Obsels, since @prefix lines are considered
+    as elements. */
+    private var PARSING_BATCH_SIZE: int = 50;
+
+    /* Timeout (in ms) for the Timer doing batch parsing */
+    private var PARSING_TIMEOUT: int = 150;
+
     public function twoDigits(n: int): String
     {
         if (n < 10)
@@ -124,28 +142,118 @@ public class Trace extends EventDispatcher
      *
      * If reset is true, then first remove all existing obsels from
      * the trace.
+     *
+     * The loading is non-blocking: the method will return immediately.
+     *
+     * The trace object will dispatch PARSING_PROGRESS events with
+     * value (float, 0< <1) and message (String) attributes, so that a
+     * progress bar can be displayed.
+     *
+     * When the trace is fully loaded, the trace will dispatch a
+     * PARSING_DONE event.
      */
-    public function updateFromRDF(ttl: String, reset: Boolean = true): void
+    public function updateFromRDF(ttl: String, reset: Boolean = true): Boolean
     {
+        var e: TraceEvent;
+        var oldAutosync: Boolean = this.autosync;
+
+        if (loadingTimer !== null)
+            return false;
+
+        this.autosync = false;
+
         if (reset)
             this.obsels.removeAll();
 
-        //we split the ttl on each "." line (kind of an "end of instruction" in ttl (?))
-        var ar:Array = ttl.split(/\.\s*$/m);
+        e = new TraceEvent(TraceEvent.PARSING_PROGRESS);
+        e.value = 0;
+        e.message = "Splitting data";
+        this.dispatchEvent(e);
 
-        for each (var l: String in ar)
+        //we split the ttl on each "." line (kind of an "end of instruction" in ttl (?))
+        var ar: Array = ttl.split(/\.\s*$/m);
+
+        loadingInfo = new Object();
+        loadingInfo.data = ar;
+        loadingInfo.index = 0;
+        loadingInfo.oldAutosync = oldAutosync;
+
+        loadingTimer = new Timer(PARSING_TIMEOUT);
+        loadingTimer.addEventListener(TimerEvent.TIMER, loadingTimerCallback);
+        loadingTimer.start();
+        return true;
+    }
+
+    private function loadingTimerCallback(event: TimerEvent): void
+    {
+        var e: TraceEvent;
+
+        if (loadingInfo === null)
         {
+            /* Strange problem, it should not be null. Cancelling the
+             * timer. */
+            loadingTimer.stop();
+            loadingTimer.removeEventListener(TimerEvent.TIMER, loadingTimerCallback);
+            loadingTimer = null;
+            return;
+        }
+        /* Parse a chunk of data */
+        loadingInfo.index = partialParseTTL(loadingInfo.data, loadingInfo.index);
+
+        /* Dispatch progress event */
+        e = new TraceEvent(TraceEvent.PARSING_PROGRESS);
+        e.value = loadingInfo.index / loadingInfo.data.length;
+        e.message = "Parsed " + this.obsels.length + " obsels";
+        this.dispatchEvent(e);
+
+        /* Check for process end */
+        if (loadingInfo.index >= loadingInfo.data.length)
+        {
+            loadingTimer.stop();
+            loadingTimer.removeEventListener(TimerEvent.TIMER, loadingTimerCallback);
+            loadingTimer = null;
+
+            this.autosync = loadingInfo.oldAutosync;
+            loadingInfo = null;
+
+            e = new TraceEvent(TraceEvent.PARSING_DONE);
+            e.value = 1.0;
+            e.message = "Parsed " + this.obsels.length + " obsels";
+            this.dispatchEvent(e);
+        }
+    }
+    /*
+     * Parse PARSING_BATCH_SIZE obsels from a TTL array
+     *
+     * Return the index of the next item to parse.
+     */
+    private function partialParseTTL(data: Array, index: int): int
+    {
+        var i: int = 0;
+        var l: String;
+        for (i = index; i < index + PARSING_BATCH_SIZE; i++)
+        {
+            if (i >= data.length)
+            {
+                return i;
+            }
+            l = data[i];
+            // Ignore prefixes for the moment. We should parse them
+            if (l.substr(0, 7) == '@prefix')
+                continue;
             // Append the trailing . again to get a valid TTL serialization.
             l = l + "\n.\n";
-            //logger.info("Parsing\n=====================================" + l + "\n============================");
 
             var obs: Obsel = new Obsel("temp");
             obs.updateFromRDF(l);
 
             //if the initialization from the ttl chunk is ok, we add the obsel to the trace
             if (obs.type != "temp")
+            {
                 this.addObsel(obs);
+            }
         }
+        return i;
     }
 
     public function get remote(): RemoteObject
