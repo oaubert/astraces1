@@ -113,10 +113,10 @@ public class Trace extends EventDispatcher
     /* Number of items to parse during a parsing iteration. Note that
     it is not the number of Obsels, since @prefix lines are considered
     as elements. */
-    private var PARSING_BATCH_SIZE: int = 50;
+    public var PARSING_BATCH_SIZE: int = 100;
 
     /* Timeout (in ms) for the Timer doing batch parsing */
-    private var PARSING_TIMEOUT: int = 150;
+    public var PARSING_TIMEOUT: int = 150;
 
     public function twoDigits(n: int): String
     {
