@@ -223,7 +223,7 @@ public class Obsel extends EventDispatcher implements IResponder
     {
         var s: String = "Obsel " + this.type + " [" + this.uid + "] (" + this.begin + " - " + this.end + ")\n{" ;
         for (var p: String in this.props)
-            s = s + p + "=" + this.props[p].toString().replace("\n", "\\n") + ", "
+            s = s + p + "=" + this.props[p].toString().replace("\r", "\\r").replace("\n", "\\n") + ", "
         s = s + "}"
         return s;
     }
@@ -388,6 +388,8 @@ public class Obsel extends EventDispatcher implements IResponder
             if (l == "")
                 continue;
             //trace("Processing " + l);
+
+            // Type declaration
             a = l.match(/(.+)\s+a\s+(\w*):(\w+)\s*;/);
             if (a)
             {
@@ -404,6 +406,8 @@ public class Obsel extends EventDispatcher implements IResponder
             }
             if (! inData)
                 continue;
+
+            // Handle continued list data
             if (listData)
             {
                 a=l.match(/(.*)\s*\)\s*;$/);
@@ -421,13 +425,14 @@ public class Obsel extends EventDispatcher implements IResponder
                 listData.push(repr2value(l));
                 continue;
             }
+
             a = l.match(/^(\w*):(\w+)\s+(.+?)\s*([;\.]?)$/);
             if (a)
             {
                 /*
                 for (var i: int = 0 ; i < a.length ; i++)
                 {
-                trace("Property " + i + ": " + a[i]);
+                logger.debug("Property " + i + ": " + a[i]);
                 }
                 */
                 var idprefix: String = a[1];
