@@ -66,6 +66,9 @@ package com.ithaca.traces
 
 import com.ithaca.traces.model.vo.SGBDObsel;
 
+// From as3corelibs
+import com.adobe.serialization.json.JSON;
+
 import flash.events.EventDispatcher;
 
 import mx.rpc.IResponder;
@@ -521,6 +524,70 @@ public class Obsel extends EventDispatcher implements IResponder
         var o: Obsel = new Obsel("Generic");
         o.updateFromRDF(data);
         return o;
+    }
+
+    /**
+     * Generate the JSON representation of the obsel
+     *
+     * @param context: an object containing the @context information
+     * from the containing trace, used to resolve qnames
+     *
+     * @return The generated JSON
+     */
+    public function toJSON(context: Object = null): *
+    {
+        var res: Object = new Object();
+
+        // FIXME: use basename(uri)
+        res['@id'] = this.uri;
+        res['@type'] = this.type;
+        res['begin'] = this.begin;
+        res['end'] = this.end;
+        res['subject'] = this.uid;
+        for (var prop: String in this.props)
+        {
+            var name: String = prop;
+            if (prop.indexOf(":") == -1)
+            {
+                /* No : in property name: old convention foo -> :hasFoo */
+                name = ":has" + prop.charAt(0).toUpperCase() + prop.substr(1);
+            }
+            res[name] = this.props[prop];
+        }
+
+        return res;
+    }
+
+    public function toJSONString(context: Object = null): String
+    {
+        return JSON.encode(this.toJSON(context));
+    }
+
+    public function updateFromJSON(source: *): void
+    {
+        if (source is String)
+            source = JSON.decode(source);
+
+        var json_mapping: Object = { '@id': 'uri',
+                                     '@type': 'type',
+                                     'begin': 'begin',
+                                     'end': 'end',
+                                     'subject': 'uid'
+                                   };
+
+        for (var prop: String in source)
+        {
+            var name: String = prop;
+            if (json_mapping.hasOwnProperty(name))
+            {
+                this[json_mapping[name]] = source[name];
+            }
+            else
+            {
+                // No standard attribute. Store in props
+                this.props[name] = source[name];
+            }
+        }
     }
 }
 }

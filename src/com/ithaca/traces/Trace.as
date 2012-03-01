@@ -74,6 +74,9 @@ import mx.logging.Log;
 import mx.rpc.remoting.RemoteObject;
 import com.ithaca.traces.events.TraceEvent;
 
+// From as3corelibs
+import com.adobe.serialization.json.JSON;
+
 /**
  * Usage:
  * - at application start, initialize the trace with the uid and possibly the URI:
@@ -176,6 +179,55 @@ public class Trace extends EventDispatcher
         loadingInfo = new Object();
         loadingInfo.data = ar;
         loadingInfo.index = 0;
+        loadingInfo.parser = partialParseTTL;
+        loadingInfo.oldAutosync = oldAutosync;
+
+        loadingTimer = new Timer(PARSING_TIMEOUT);
+        loadingTimer.addEventListener(TimerEvent.TIMER, loadingTimerCallback);
+        loadingTimer.start();
+        return true;
+    }
+
+    /**
+     * Update the given trace from a Json serialization.
+     *
+     * If reset is true, then first remove all existing obsels from
+     * the trace.
+     *
+     * The loading is non-blocking: the method will return immediately.
+     *
+     * The trace object will dispatch PARSING_PROGRESS events with
+     * value (float, 0< <1) and message (String) attributes, so that a
+     * progress bar can be displayed.
+     *
+     * When the trace is fully loaded, the trace will dispatch a
+     * PARSING_DONE event.
+     */
+    public function updateFromJSON(json: String, reset: Boolean = true): Boolean
+    {
+        var e: TraceEvent;
+        var oldAutosync: Boolean = this.autosync;
+
+        if (loadingTimer !== null)
+            return false;
+
+        this.autosync = false;
+
+        if (reset)
+            this.obsels.removeAll();
+
+        e = new TraceEvent(TraceEvent.PARSING_PROGRESS);
+        e.value = 0;
+        e.message = "Splitting data";
+        this.dispatchEvent(e);
+
+        var data: Object = JSON.decode(json);
+        var ar: Array = data['obsels'];
+
+        loadingInfo = new Object();
+        loadingInfo.data = ar;
+        loadingInfo.index = 0;
+        loadingInfo.parser = partialParseJSON;
         loadingInfo.oldAutosync = oldAutosync;
 
         loadingTimer = new Timer(PARSING_TIMEOUT);
@@ -198,7 +250,7 @@ public class Trace extends EventDispatcher
             return;
         }
         /* Parse a chunk of data */
-        loadingInfo.index = partialParseTTL(loadingInfo.data, loadingInfo.index);
+        loadingInfo.index = loadingInfo.parser(loadingInfo.data, loadingInfo.index);
 
         /* Dispatch progress event */
         e = new TraceEvent(TraceEvent.PARSING_PROGRESS);
@@ -222,6 +274,7 @@ public class Trace extends EventDispatcher
             this.dispatchEvent(e);
         }
     }
+
     /*
      * Parse PARSING_BATCH_SIZE obsels from a TTL array
      *
@@ -248,6 +301,33 @@ public class Trace extends EventDispatcher
             obs.updateFromRDF(l);
 
             //if the initialization from the ttl chunk is ok, we add the obsel to the trace
+            if (obs.type != "temp")
+            {
+                this.addObsel(obs);
+            }
+        }
+        return i;
+    }
+
+    /*
+     * Parse PARSING_BATCH_SIZE obsels from a JSON array
+     *
+     * Return the index of the next item to parse.
+     */
+    private function partialParseJSON(data: Array, index: int): int
+    {
+        var i: int = 0;
+        var l: String;
+        for (i = index; i < index + PARSING_BATCH_SIZE; i++)
+        {
+            if (i >= data.length)
+            {
+                return i;
+            }
+            var obs: Obsel = new Obsel("temp");
+            obs.updateFromJSON(data[i]);
+
+            //if the initialization from the json chunk is ok, we add the obsel to the trace
             if (obs.type != "temp")
             {
                 this.addObsel(obs);
