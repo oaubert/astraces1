@@ -556,7 +556,7 @@ public class Trace extends EventDispatcher
             }
             for (i = 0; i < row.length; i++)
                 if (row[i] === null)
-                    row[i] = "-";
+                    row[i] = "";
             // Print row
             data.push(row.join("\t"));
         }
