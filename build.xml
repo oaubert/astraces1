@@ -22,16 +22,19 @@
         </chainedmapper>  
       </mapper>  
     </pathconvert>
-    <compc output="${OUTPUT}" 
-           include-classes="${src_classes}" 
-           actionscript-file-encoding="UTF-8" 
-           keep-generated-actionscript="true" 
-           static-link-runtime-shared-libraries="true" 
+    <compc output="${OUTPUT}"
+           include-classes="${src_classes}"
+           actionscript-file-encoding="UTF-8"
+           keep-generated-actionscript="true"
+           static-link-runtime-shared-libraries="true"
            debug="true">
-      <source-path path-element="${APP_SRC}" />   
-<!--      <compiler.library-path dir="${basedir}" append="true">
-        <include name="libs" />
-      </compiler.library-path> -->
+      <source-path path-element="${APP_SRC}" />
+      <compiler.include-libraries dir="lib" append="true">
+        <include name="as3corelib.swc" />
+      </compiler.include-libraries>
+      <external-library-path dir="${FLEX_HOME}/frameworks" append="true">
+        <include name="libs/framework.swc" />
+      </external-library-path>
     </compc>
   </target>
 </project>
